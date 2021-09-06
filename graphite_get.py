@@ -2,6 +2,7 @@
 
 import argparse
 import requests
+import urllib.parse
 import json
 
 
@@ -20,7 +21,7 @@ class Point:
 def graphite_render(url, user, password, targets, from_time, until_time):
     u = url+"/render/?format=json&from=%s&until=%s" % (from_time, until_time)
     for target in targets:
-        u += "&target=" + target
+        u += "&target=" + urllib.parse.quote(target)
 
     resp = requests.get(u, auth=(user, password))
 
@@ -44,7 +45,7 @@ def graphite_render(url, user, password, targets, from_time, until_time):
 
         return metrics
 
-    raise RuntimeError("request failed with %s" % resp.status_code)
+    raise RuntimeError("request '%s' failed with %s" % (u, resp.status_code))
 
 
 def parse_cmdline():
@@ -55,7 +56,7 @@ def parse_cmdline():
     parser.add_argument('-a', '--address', dest='address', action='store', type=str, required=True,
                         help='URL of carbonapi server')
 
-    parser.add_argument('-F', '--from', dest='from_time', action='store', type=str, default="now-5s",
+    parser.add_argument('-F', '--from', dest='from_time', action='store', type=str, default="-5m",
                         help='From timestamp (relative or absolute)')
 
     parser.add_argument('-U', '--until', dest='until_time', action='store', type=str, default="now",
