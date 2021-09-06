@@ -10,16 +10,18 @@ class Point:
         self.timestamp = int(timestamp)
         self.value = float(value)
 
-    def __str__(self):
+    def str(self):
         return "{ %d, %f }" % (self.timestamp, self.value)
+
+    def __str__(self):
+        return self.str()
 
 
 def graphite_render(url, user, password, targets, from_time, until_time):
     u = url+"/render/?format=json&from=%s&until=%s" % (from_time, until_time)
     for target in targets:
         u += "&target=" + target
-    
-    print(u)
+
     resp = requests.get(u, auth=(user, password))
 
     metrics = dict()
@@ -44,14 +46,11 @@ def graphite_render(url, user, password, targets, from_time, until_time):
 
     raise RuntimeError("request failed with %s" % resp.status_code)
 
-        
-    
-
 
 def parse_cmdline():
     parser = argparse.ArgumentParser(description='Get graphite metrics')
 
-    #parser.add_argument('pos', action='store', type=str, help='positional parameter')
+    # parser.add_argument('pos', action='store', type=str, help='positional parameter')
 
     parser.add_argument('-a', '--address', dest='address', action='store', type=str, required=True,
                         help='URL of carbonapi server')
@@ -82,7 +81,9 @@ def main():
     result = graphite_render(args.address, args.user, args.password, args.targets,
                              args.from_time, args.until_time)
 
-    print(result)
+    for target, points in result.items():
+        print("%s: %s" % (target, ', '.join(map(str, points))))
+
 
 if __name__ == "__main__":
     main()
