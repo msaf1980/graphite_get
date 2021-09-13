@@ -45,7 +45,7 @@ def graphite_render(url, user, password, targets, from_time, until_time):
 
         return metrics
 
-    raise RuntimeError("request '%s' failed with %s" % (u, resp.status_code))
+    raise RuntimeError("request '%s' failed with %s (%s)" % (u, resp.status_code, resp.text))
 
 
 def parse_cmdline():
