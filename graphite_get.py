@@ -27,8 +27,15 @@ def graphite_render(url, user, password, targets, from_time, until_time):
 
     metrics = dict()
     if resp.status_code == 404:
-        return metrics
+        if len(resp.text) == 0:
+            # valid carbonapi responce
+            return metrics
+
+        raise RuntimeError("request '%s' failed with %s (%s)" % (u, resp.status_code, resp.text))
     if resp.status_code == 200:
+        content_type = resp.headers['content-type']
+        if content_type != 'application/json':
+            raise RuntimeError("request '%s' failed, content type mismatch: '%s' (%s)" % (u, content_type, resp.text))        
         try:
             data = json.loads(resp.text)
             for r in data:
