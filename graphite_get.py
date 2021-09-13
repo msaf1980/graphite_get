@@ -29,19 +29,22 @@ def graphite_render(url, user, password, targets, from_time, until_time):
     if resp.status_code == 404:
         return metrics
     if resp.status_code == 200:
-        data = json.loads(resp.text)
-        for r in data:
-            target = r.get('target')
-            datapoints = r.get('datapoints')
-            if target is None or datapoints is None:
-                continue
+        try:
+            data = json.loads(resp.text)
+            for r in data:
+                target = r.get('target')
+                datapoints = r.get('datapoints')
+                if target is None or datapoints is None:
+                    continue
 
-            points = list()
-            for point in datapoints:
-                # print(point)
-                points.append(Point(point[1], point[1]))
+                points = list()
+                for point in datapoints:
+                    # print(point)
+                    points.append(Point(point[1], point[1]))
 
-            metrics[target] = points
+                metrics[target] = points
+        except Exception as e:
+            raise RuntimeError("request '%s' responce mismatched: %s" % (u, resp.text))        
 
         return metrics
 
